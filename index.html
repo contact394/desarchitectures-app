@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desarchitectures — Pilotage</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Desarchitectures">
+<meta name="theme-color" content="#181816">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f6f3;--white:#fff;--border:#e0dbd3;--b2:#ede9e3;
+  --text:#1a1a18;--mid:#5c5852;--low:#a09c97;
+  --f:#7c5c2e;--fl:#fdf3e7;
+  --c:#2c5f8a;--cl:#e6f0f8;
+  --m:#3a7d5c;--ml:#e5f2eb;
+  --a:#6b4f3a;
+  --gold:#a07800;--goldl:#fdf8e1;
+  --red:#b83228;--redl:#fdf0ee;
+  --serif:'Libre Baskerville',Georgia,serif;
+  --sans:'Source Sans 3',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;-webkit-font-smoothing:antialiased;font-size:14px}
+
+/* ── SIDEBAR ── */
+#sb{width:230px;flex-shrink:0;background:#181816;display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-logo{font-family:var(--serif);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.28);padding:26px 18px 2px;display:block}
+.sb-brand{font-family:var(--serif);font-size:.88rem;color:#fff;padding:0 18px 22px;line-height:1.4}
+.sb-sep{height:1px;background:rgba(255,255,255,.07);margin:0 18px 10px}
+.sb-sec{font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.26);font-weight:700;padding:0 18px;margin:10px 0 4px}
+.nb{display:flex;align-items:center;gap:8px;padding:8px 18px;cursor:pointer;font-size:.75rem;color:rgba(255,255,255,.48);font-weight:500;border-left:2px solid transparent;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:var(--sans)}
+.nb:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.78)}
+.nb.on{background:rgba(255,255,255,.09);color:#fff;border-left-color:#fff}
+.nb .ni{font-size:.85rem;width:16px;text-align:center;flex-shrink:0}
+.proj-list{padding:0 10px;display:flex;flex-direction:column;gap:3px}
+.pi{padding:9px 10px;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:all .15s;user-select:none}
+.pi:hover{background:rgba(255,255,255,.06)}
+.pi.on{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.12)}
+.pi-name{font-size:.76rem;font-weight:600;color:#fff;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-sub{font-size:.64rem;color:rgba(255,255,255,.38);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-bar{height:2px;background:rgba(255,255,255,.1);border-radius:99px;margin-top:6px;overflow:hidden}
+.pi-fill{height:100%;border-radius:99px;background:rgba(255,255,255,.45);transition:width .3s}
+.btn-add-proj{margin:6px 10px 0;padding:8px 10px;border-radius:6px;border:1px dashed rgba(255,255,255,.16);background:transparent;font-family:var(--sans);font-size:.68rem;color:rgba(255,255,255,.38);cursor:pointer;transition:all .2s;width:calc(100% - 20px);text-align:left;display:flex;align-items:center;gap:7px}
+.btn-add-proj:hover{border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.65)}
+.sb-foot{margin-top:auto;padding:10px 18px;font-size:.57rem;color:rgba(255,255,255,.2);text-align:center}
+.sb-foot.saved{color:rgba(100,210,140,.4)}
+
+/* ── MAIN ── */
+#main{flex:1;overflow-y:auto;min-height:100vh}
+.pg{display:none;padding:32px 32px 80px}
+.pg.on{display:block}
+
+/* ── PAGE HEADER ── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;gap:14px;flex-wrap:wrap}
+.ph h1{font-family:var(--serif);font-size:1.35rem;font-weight:400;margin-bottom:3px}
+.ph p{font-size:.76rem;color:var(--low);font-style:italic}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 18px;border-radius:6px;font-family:var(--sans);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .18s;border:none;display:inline-flex;align-items:center;gap:6px}
+.btn-dark{background:var(--text);color:#fff}.btn-dark:hover{opacity:.85}
+.btn-out{background:var(--white);color:var(--mid);border:1px solid var(--border)}.btn-out:hover{border-color:var(--mid);color:var(--text)}
+.btn-blue{background:var(--c);color:#fff}.btn-blue:hover{opacity:.85}
+.btn-green{background:var(--m);color:#fff}.btn-green:hover{opacity:.85}
+.btn-red{background:var(--redl);color:var(--red);border:1px solid #f0c0bb}.btn-red:hover{background:var(--red);color:#fff}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── MODAL ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.ov.on{display:flex}
+.modal{background:var(--white);border-radius:11px;padding:30px;max-width:540px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.modal-x{position:absolute;top:14px;right:14px;background:none;border:none;font-size:1rem;color:var(--low);cursor:pointer;padding:4px;line-height:1}.modal-x:hover{color:var(--text)}
+.modal-title{font-family:var(--serif);font-size:1.15rem;font-weight:400;margin-bottom:4px}
+.modal-sub{font-size:.75rem;color:var(--low);margin-bottom:22px}
+.fs{margin-bottom:18px}
+.fs-title{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--low);margin-bottom:9px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.f{display:flex;flex-direction:column;gap:4px}
+.f.full{grid-column:1/-1}
+.f label{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--low)}
+.f input,.f select,.f textarea{border:1.5px solid var(--border);border-radius:6px;padding:8px 11px;font-family:var(--sans);font-size:.81rem;color:var(--text);background:var(--white);outline:none;transition:border-color .15s}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--c)}
+.f textarea{resize:vertical;min-height:72px}
+.modal-footer{display:flex;gap:9px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+
+/* Mission pick */
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mc{border:2px solid var(--border);border-radius:7px;padding:11px 13px;cursor:pointer;transition:all .18s;user-select:none}
+.mc:hover{border-color:var(--mid)}
+.mc.on{border-color:var(--c);background:var(--cl)}
+.mc.on.mf{border-color:var(--f);background:var(--fl)}
+.mc-t{font-size:.79rem;font-weight:700;margin-bottom:2px}
+.mc-s{font-size:.67rem;color:var(--low);line-height:1.35}
+.mc.on .mc-s{color:var(--mid)}
+.part-row{display:none;gap:8px;margin-top:9px}
+.part-row.on{display:flex}
+.popt{flex:1;display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:.74rem;font-weight:600;transition:all .18s}
+.popt:hover{border-color:var(--mid)}
+.popt.c{border-color:var(--c);background:var(--cl);color:var(--c)}
+.popt.m{border-color:var(--m);background:var(--ml);color:var(--m)}
+
+/* ── DASHBOARD ── */
+.empty{text-align:center;padding:70px 20px;color:var(--low)}
+.empty .ei{font-size:2.4rem;margin-bottom:12px}
+.empty h2{font-family:var(--serif);font-size:1.05rem;font-weight:400;color:var(--mid);margin-bottom:8px}
+.empty p{font-size:.78rem;line-height:1.6;max-width:300px;margin:0 auto 18px}
+.proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.pc{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:18px;cursor:pointer;transition:all .18s}
+.pc:hover{border-color:var(--c);box-shadow:0 2px 14px rgba(0,0,0,.07)}
+.pc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:11px;gap:8px}
+.pc-name{font-size:.88rem;font-weight:700;margin-bottom:1px}
+.pc-proj{font-size:.71rem;color:var(--low);font-style:italic}
+.badge{font-size:.56rem;font-weight:700;padding:3px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;flex-shrink:0}
+.bf{background:var(--fl);color:var(--f)}
+.bc{background:var(--cl);color:var(--c)}
+.bm{background:var(--ml);color:var(--m)}
+.bcm{background:var(--cl);color:var(--c)}
+.pc-pl{display:flex;justify-content:space-between;font-size:.65rem;color:var(--low);margin-bottom:4px}
+.pc-pl strong{font-weight:700;color:var(--text)}
+.pc-bg{height:4px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:11px}
+.pc-bf{height:100%;border-radius:99px;background:var(--c);transition:width .4s}
+.pc-meta{font-size:.69rem;color:var(--low)}
+
+/* ── PROJET PAGE ── */
+.proj-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.proj-hdr-l h2{font-family:var(--serif);font-size:1.2rem;font-weight:400;margin-bottom:2px}
+.proj-hdr-l p{font-size:.73rem;color:var(--low);font-style:italic}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:22px;gap:0}
+.tab{padding:8px 16px;font-size:.72rem;font-weight:600;letter-spacing:.05em;color:var(--low);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;user-select:none}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--c);border-bottom-color:var(--c)}
+.tc{display:none}.tc.on{display:block}
+
+/* ── ARBORESCENCE ── */
+.cg{display:grid;gap:16px;align-items:start}
+.cg.g1{grid-template-columns:1fr}
+.cg.g2{grid-template-columns:1fr 1fr}
+.cg.g3{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:780px){.cg{grid-template-columns:1fr!important}}
+
+.col{border-radius:7px;overflow:hidden;border:1px solid var(--border);background:var(--white)}
+.ch{padding:13px 15px;display:flex;align-items:flex-start;gap:11px}
+.col-f .ch{background:var(--f)}.col-c .ch{background:var(--c)}.col-m .ch{background:var(--m)}
+.ch-info{flex:1}
+.ch-lbl{font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.48);font-weight:600;margin-bottom:1px}
+.ch-title{font-family:var(--serif);font-size:.94rem;font-weight:400;color:#fff}
+.ch-prog{text-align:right;min-width:58px}
+.cpct{font-size:1.3rem;font-weight:700;color:#fff;line-height:1;margin-bottom:1px}
+.cpct-lbl{font-size:.52rem;color:rgba(255,255,255,.52);text-transform:uppercase;letter-spacing:.07em}
+.cb-bg{height:3px;background:rgba(255,255,255,.2);border-radius:99px;margin-top:5px;overflow:hidden}
+.cb-fill{height:100%;background:#fff;border-radius:99px;transition:width .35s}
+
+.phase{border-bottom:1px solid var(--border)}.phase:last-child{border-bottom:none}
+.phdr{padding:9px 13px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s;user-select:none}
+.phdr:hover{background:#faf9f7}
+.phck{width:15px;height:15px;flex-shrink:0;border-radius:3px;border:1.5px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;transition:all .18s;pointer-events:none}
+.phck.full{border-color:transparent}
+.col-f .phck.full{background:var(--f)}.col-c .phck.full{background:var(--c)}.col-m .phck.full{background:var(--m)}
+.phck.part{background:var(--white)}
+.col-f .phck.part{border-color:var(--f)}.col-c .phck.part{border-color:var(--c)}.col-m .phck.part{border-color:var(--m)}
+.phck .tk{font-size:.46rem;color:#fff;display:none}.phck.full .tk{display:block}
+.phck .sq{width:6px;height:6px;border-radius:2px;display:none}.phck.part .sq{display:block}
+.col-f .sq{background:var(--f)}.col-c .sq{background:var(--c)}.col-m .sq{background:var(--m)}
+.pnum{width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.53rem;font-weight:700;flex-shrink:0}
+.col-f .pnum{background:var(--fl);color:var(--f)}.col-c .pnum{background:var(--cl);color:var(--c)}.col-m .pnum{background:var(--ml);color:var(--m)}
+.pname{flex:1;font-size:.79rem;font-weight:600;line-height:1.3}
+.mprog{display:flex;align-items:center;gap:5px;min-width:64px}
+.mbar{flex:1;height:2px;background:var(--border);border-radius:99px;overflow:hidden}
+.mfill{height:100%;border-radius:99px;transition:width .28s;width:0%}
+.col-f .mfill{background:var(--f)}.col-c .mfill{background:var(--c)}.col-m .mfill{background:var(--m)}
+.mpct{font-size:.57rem;color:var(--low);font-weight:600;min-width:24px;text-align:right}
+.parr{font-size:.5rem;color:var(--low);transition:transform .2s;flex-shrink:0}
+.phase.open .parr{transform:rotate(180deg)}
+.pbody{display:none;border-top:1px solid var(--border)}.phase.open .pbody{display:block}
+
+.grp{border-bottom:1px solid #f0ece7}.grp:last-child{border-bottom:none}
+.ghdr{padding:6px 13px 6px 38px;cursor:pointer;display:flex;align-items:center;gap:7px;background:#fafaf8;transition:background .15s;user-select:none}
+.ghdr:hover{background:#f4f2ef}
+.glbl{flex:1;font-size:.59rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.glbl.int{color:var(--a)}.glbl.dlv{color:var(--low)}
+.garr{font-size:.47rem;color:var(--low);transition:transform .2s}
+.grp.open .garr{transform:rotate(180deg)}
+.tasks{display:none;padding:3px 0 6px;background:var(--white)}.grp.open .tasks{display:block}
+
+.task{padding:4px 13px 4px 48px;transition:background .1s}.task:hover{background:#faf9f7}
+.trow{display:flex;align-items:flex-start;gap:6px}
+.tcb{width:14px;height:14px;flex-shrink:0;margin-top:1px;border-radius:3px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;justify-content:center;transition:all .16s;position:relative}
+.tcb:checked{border-color:transparent}
+.col-f .tcb:checked{background:var(--f)}.col-c .tcb:checked{background:var(--c)}.col-m .tcb:checked{background:var(--m)}
+.tcb:checked::after{content:'✓';font-size:.43rem;color:#fff;font-weight:700;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.tvis{width:14px;height:14px;flex-shrink:0;margin-top:1px;border-radius:3px;border:1.5px dashed #c8c0b8;background:transparent;cursor:pointer;appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;justify-content:center;transition:all .16s;position:relative}
+.tvis:checked{border-style:solid;border-color:transparent;background:#d4a820}
+.tvis:checked::after{content:'👁';font-size:.47rem;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.tlbl{font-size:.74rem;color:var(--mid);line-height:1.4;flex:1;cursor:pointer}
+.tcb:checked~.tlbl{color:var(--low);text-decoration:line-through;text-decoration-color:var(--b2)}
+.bdg{font-size:.51rem;padding:1px 5px;border-radius:3px;font-weight:700;letter-spacing:.04em;white-space:nowrap;align-self:center;flex-shrink:0}
+.col-f .bdg{background:var(--fl);color:var(--f)}.col-c .bdg{background:var(--cl);color:var(--c)}.col-m .bdg{background:var(--ml);color:var(--m)}
+.bdg.opt{background:#f0f0ee;color:var(--low)}
+.vleg{display:flex;gap:10px;padding:5px 13px 5px 38px;background:#fffdf7;border-bottom:1px solid var(--b2);font-size:.58rem;color:var(--low)}
+.note-b{padding:5px 13px 5px 48px;font-size:.68rem;color:var(--low);font-style:italic;line-height:1.5;border-left:2px solid var(--border);margin:3px 13px 4px 36px;background:#faf9f7;border-radius:0 3px 3px 0}
+.col-f .note-b{border-left-color:var(--f)}.col-c .note-b{border-left-color:var(--c)}.col-m .note-b{border-left-color:var(--m)}
+
+/* Upload */
+.tfiles{margin-top:4px;padding-left:20px}
+.flist{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:3px}
+.fchip{display:flex;align-items:center;gap:3px;padding:2px 7px;border-radius:99px;font-size:.62rem;font-weight:600;background:var(--bg);border:1px solid var(--border);color:var(--mid)}
+.fchip.pdf{border-color:var(--c);color:var(--c);background:var(--cl)}
+.fchip.img{border-color:var(--m);color:var(--m);background:var(--ml)}
+.fchip-x{background:none;border:none;cursor:pointer;color:var(--low);font-size:.68rem;padding:0;margin-left:1px;line-height:1}.fchip-x:hover{color:var(--red)}
+.btn-up{display:inline-flex;align-items:center;gap:3px;font-size:.6rem;font-weight:600;color:var(--low);border:1px dashed var(--border);border-radius:99px;padding:2px 8px;cursor:pointer;background:none;font-family:var(--sans);transition:all .18s}
+.btn-up:hover{border-color:var(--c);color:var(--c)}
+.up-input{display:none}
+
+/* ── ONGLET MAIL ── */
+.mail-wrap{max-width:640px}
+.api-box{background:var(--goldl);border:1px solid #e0c860;border-radius:8px;padding:13px 15px;margin-bottom:18px;font-size:.76rem;color:var(--gold)}
+.api-box a{color:var(--gold);font-weight:700}
+.api-row{display:flex;gap:8px;margin-top:8px}
+.api-in{flex:1;border:1.5px solid #dfc050;border-radius:6px;padding:7px 10px;font-family:var(--sans);font-size:.77rem;background:#fff;outline:none}
+.api-in:focus{border-color:var(--gold)}
+.api-ok{background:none;border:none;color:var(--low);font-size:.69rem;cursor:pointer;text-decoration:underline;font-family:var(--sans)}
+.mstatus{display:flex;align-items:center;gap:9px;padding:12px 14px;border-radius:7px;margin-bottom:16px;font-size:.77rem}
+.mstatus.idle{background:var(--bg);border:1px solid var(--border);color:var(--mid)}
+.mstatus.running{background:var(--cl);border:1px solid var(--c);color:var(--c)}
+.mstatus.done{background:var(--ml);border:1px solid var(--m);color:var(--m)}
+.mstatus.err{background:var(--redl);border:1px solid #f0b8b0;color:var(--red)}
+.fl{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.fl label{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--low)}
+.fl input,.fl textarea{border:1.5px solid var(--border);border-radius:6px;padding:8px 11px;font-family:var(--sans);font-size:.81rem;color:var(--text);outline:none;transition:border-color .15s;background:var(--white)}
+.fl input:focus,.fl textarea:focus{border-color:var(--c)}
+.fl textarea{resize:vertical;min-height:200px;line-height:1.6}
+.mail-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.mail-hint{font-size:.69rem;color:var(--low);font-style:italic;margin-top:10px;line-height:1.55}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+
+/* ── ONGLET EXPORT ── */
+.exp-wrap{max-width:500px;display:flex;flex-direction:column;gap:14px}
+.exp-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:20px}
+.exp-card-t{font-size:.8rem;font-weight:700;margin-bottom:5px}
+.exp-card-s{font-size:.72rem;color:var(--low);line-height:1.55;margin-bottom:13px}
+.url-row{display:flex;gap:8px}
+.url-in{flex:1;border:1.5px solid var(--border);border-radius:6px;padding:8px 11px;font-size:.77rem;color:var(--mid);background:var(--bg);font-family:var(--sans)}
+
+/* Config API */
+.cfg-panel{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center}
+.cfg-panel.on{display:flex}
+.cfg-box{background:#fff;border-radius:11px;padding:28px;max-width:440px;width:100%;margin:20px}
+.cfg-title{font-family:serif;font-size:1.1rem;font-weight:400;margin-bottom:4px}
+.cfg-sub{font-size:.73rem;color:#a09c97;margin-bottom:18px;line-height:1.5}
+.cfg-f{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.cfg-f label{font-size:.59rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a09c97}
+.cfg-f input{border:1.5px solid #e0dbd3;border-radius:6px;padding:8px 11px;font-family:inherit;font-size:.8rem;outline:none}
+.cfg-f input:focus{border-color:#2c5f8a}
+.cfg-row{display:flex;gap:9px;justify-content:flex-end;margin-top:4px}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:#f7f6f3;z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.login-box{background:#fff;border:1px solid #e0dbd3;border-radius:11px;padding:36px;max-width:380px;width:100%;text-align:center}
+.login-logo{font-family:serif;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#a09c97;margin-bottom:8px}
+.login-title{font-family:serif;font-size:1.3rem;font-weight:400;margin-bottom:4px}
+.login-hr{width:28px;height:1px;background:#e0dbd3;margin:12px auto 20px}
+.login-f{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;text-align:left}
+.login-f label{font-size:.59rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a09c97}
+.login-f input{border:1.5px solid #e0dbd3;border-radius:6px;padding:9px 12px;font-family:inherit;font-size:.82rem;outline:none;transition:border-color .15s}
+.login-f input:focus{border-color:#2c5f8a}
+.login-err{font-size:.72rem;color:#b83228;min-height:18px;margin-bottom:8px}
+.login-btn{width:100%;padding:11px;background:#1a1a18;color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:.74rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer}
+.login-btn:hover{opacity:.85}
+
+/* ── CLIENTS PANEL ── */
+.clients-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:20px}
+.clients-modal.on{display:flex}
+.clients-box{background:#fff;border-radius:11px;padding:28px;max-width:580px;width:100%;max-height:88vh;overflow-y:auto;position:relative}
+.clients-x{position:absolute;top:14px;right:14px;background:none;border:none;font-size:1rem;color:#a09c97;cursor:pointer}
+.clients-title{font-family:serif;font-size:1.1rem;font-weight:400;margin-bottom:4px}
+.clients-sub{font-size:.73rem;color:#a09c97;margin-bottom:20px}
+.client-form{background:#f7f6f3;border-radius:8px;padding:16px;margin-bottom:18px}
+.client-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.client-item{border:1px solid #e0dbd3;border-radius:7px;margin-bottom:7px;overflow:hidden}
+.client-accordion .ci-header{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;background:#fff;transition:background .15s}
+.client-accordion .ci-header:hover{background:#f7f6f3}
+.ci-arrow{font-size:.75rem;color:#a09c97;transition:transform .2s;flex-shrink:0}
+.client-accordion.open .ci-arrow{transform:rotate(180deg)}
+.ci-body{display:none;border-top:1px solid #e0dbd3;padding:8px 13px;background:#fafaf8}
+.client-accordion.open .ci-body{display:block}
+.ci-entry{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0ece6}
+.ci-entry:last-child{border-bottom:none}
+.ci-entry-info{flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ci-info{flex:1}
+.ci-name{font-size:.8rem;font-weight:700;margin-bottom:1px}
+.ci-email{font-size:.68rem;color:#a09c97}
+.ci-code{font-size:.72rem;font-family:monospace;font-weight:700;background:#f7f6f3;padding:2px 7px;border-radius:4px;color:#1a1a18;letter-spacing:.1em}
+.ci-exp{font-size:.63rem;color:#a09c97}
+.ci-exp.warn{color:#b83228}
+.ci-actions{display:flex;gap:6px;flex-shrink:0}
+.ci-btn{padding:5px 10px;border-radius:5px;font-family:inherit;font-size:.63rem;font-weight:700;cursor:pointer;border:1px solid #e0dbd3;background:#fff;color:#5c5852;transition:all .15s}
+.ci-btn:hover{border-color:#1a1a18;color:#1a1a18}
+.ci-btn.danger{border-color:#f0b8b0;color:#b83228;background:#fdf0ee}
+.ci-btn.danger:hover{background:#b83228;color:#fff}
+
+/* ── LOGS PANEL ── */
+.log-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f0ece7;font-size:.74rem}
+.log-item:last-child{border-bottom:none}
+.log-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
+.log-info{flex:1}
+.log-file{font-weight:700;margin-bottom:2px}
+.log-meta{color:#a09c97;font-size:.67rem}
+
+/* ── CFG config update ── */
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sb">
+  <span class="sb-logo">Desarchitectures</span>
+  <span class="sb-brand">Victor Vallin<br>Architecte DPLG</span>
+  <div class="sb-sep"></div>
+  <div class="sb-sec">Navigation</div>
+  <button class="nb on" onclick="goPage('dash')"><span class="ni">⌂</span>Tableau de bord</button>
+  <div class="sb-sep" style="margin-top:10px"></div>
+  <div class="sb-sec">Projets</div>
+  <div class="proj-list" id="proj-list"></div>
+  <button class="btn-add-proj" onclick="openModal()">＋ Nouveau projet</button>
+  <button onclick="logout()" style="margin:0 10px 4px;padding:7px 10px;border-radius:6px;border:1px dashed rgba(255,100,100,.25);background:transparent;font-family:inherit;font-size:.65rem;color:rgba(255,120,120,.4);cursor:pointer;width:calc(100% - 20px);text-align:left">⎋ Déconnexion</button>
+<button onclick="openCfg()" style="margin:0 10px 4px;padding:7px 10px;border-radius:6px;border:1px dashed rgba(255,255,255,.14);background:transparent;font-family:inherit;font-size:.65rem;color:rgba(255,255,255,.35);cursor:pointer;width:calc(100% - 20px);text-align:left">⚙ Config API</button>
+<a href="plu.html" style="margin:0 10px 6px;padding:7px 10px;border-radius:6px;border:1px dashed rgba(200,169,110,.25);background:transparent;font-family:inherit;font-size:.65rem;color:rgba(200,169,110,.5);cursor:pointer;width:calc(100% - 20px);text-align:left;display:block;text-decoration:none">⚖ Analyse PLU</a>
+<div class="sb-foot" id="sb-foot">● Sauvegardé</div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- DASHBOARD -->
+  <div id="pg-dash" class="pg on">
+    <div class="ph">
+      <div><h1>Tableau de bord</h1><p>Tous vos projets actifs</p></div>
+      <div class="btn-row"><button class="btn btn-dark" onclick="openModal()">＋ Nouveau projet</button></div>
+    </div>
+    <div id="dash-body"></div>
+  </div>
+
+  <!-- PROJET -->
+  <div id="pg-proj" class="pg">
+    <div class="proj-hdr">
+      <div class="proj-hdr-l"><h2 id="ptitle">—</h2><p id="psub">—</p></div>
+      <div class="btn-row">
+        <button class="btn btn-out" onclick="openModal(CUR)">✎ Modifier</button>
+        <button onclick="openClientsModal(CUR)" style="padding:8px 14px;background:#e5f2eb;color:#3a7d5c;border:1px solid #3a7d5c;border-radius:6px;font-family:inherit;font-size:.7rem;font-weight:700;cursor:pointer">👤 Accès clients</button>
+        <button onclick="openLogsModal(CUR)" style="padding:8px 14px;background:#e6f0f8;color:#2c5f8a;border:1px solid #2c5f8a;border-radius:6px;font-family:inherit;font-size:.7rem;font-weight:700;cursor:pointer">📋 Téléchargements</button>
+        <button class="btn btn-red" onclick="delProj()">✕ Supprimer</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab on" onclick="goTab('tasks')">☑ Tâches</div>
+      <div class="tab" onclick="goTab('mail')">✉ Notifier</div>
+      <div class="tab" onclick="goTab('export')">↗ Exporter</div>
+    </div>
+    <div id="tc-tasks" class="tc on"><div class="cg" id="task-grid"></div></div>
+    <div id="tc-mail"  class="tc">
+      <div class="mail-wrap">
+        <div id="api-wrap"></div>
+        <div class="mstatus idle" id="mst"><span id="mst-icon">✉</span><span id="mst-txt">Cliquez sur Générer pour rédiger le mail automatiquement.</span></div>
+        <div class="fl"><label>Objet</label><input type="text" id="m-subj" placeholder="Suivi de votre projet — Desarchitectures"></div>
+        <div class="fl"><label>Corps du mail</label><textarea id="m-body" placeholder="Cliquez sur « Générer avec Claude »…"></textarea></div>
+        <div class="mail-actions">
+          <button class="btn btn-blue" id="btn-gen" onclick="genMail()"><span id="gen-lbl">✦ Générer avec Claude</span></button>
+          <button class="btn btn-green" id="btn-send" onclick="sendMail()" disabled>↗ Ouvrir dans Gmail</button>
+        </div>
+        <p class="mail-hint">Le mail s'ouvrira dans Gmail pré-rempli. Vous pourrez relire et ajuster avant d'envoyer.</p>
+      </div>
+    </div>
+    <div id="tc-export" class="tc">
+      <div class="exp-wrap">
+        <div class="exp-card">
+          <div class="exp-card-t">📄 Fichier JSON client</div>
+          <div class="exp-card-s">Téléchargez ce fichier et uploadez-le sur votre page Squarespace pour mettre à jour la vue client. Les documents joints (PDF, images) sont inclus.</div>
+          <button class="btn btn-dark" style="width:100%;justify-content:center" onclick="doExport()">↓ Télécharger le JSON</button>
+        </div>
+        <div class="exp-card">
+          <div class="exp-card-t">🔗 Lien client</div>
+          <div class="exp-card-s">Partagez ce lien avec votre client. Il accédera à la vue de son projet sur votre site Squarespace.</div>
+          <div class="url-row">
+            <input class="url-in" id="url-disp" readonly>
+            <button class="btn btn-out" onclick="copyUrl()">Copier</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL PROJET -->
+<div class="ov" id="modal-ov">
+<div class="modal">
+  <button class="modal-x" onclick="closeModal()">✕</button>
+  <div class="modal-title" id="modal-t">Nouveau projet</div>
+  <div class="modal-sub">Renseignez les informations puis choisissez le type de mission.</div>
+  <div class="fs">
+    <div class="fs-title">Client</div>
+    <div class="fg">
+      <div class="f"><label>Nom du client</label><input id="f-client" type="text" placeholder="M. & Mme Dupont"></div>
+      <div class="f"><label>Email</label><input id="f-email" type="email" placeholder="dupont@mail.com"></div>
+      <div class="f full"><label>Nom du projet</label><input id="f-proj" type="text" placeholder="Extension — Île de Ré"></div>
+      <div class="f full"><label>URL page Squarespace client</label><input id="f-url" type="text" placeholder="https://votresite.com/dupont-ile-de-re"></div>
+    </div>
+  </div>
+  <div class="fs">
+    <div class="fs-title">Mission</div>
+    <div class="m-grid">
+      <div class="mc mf" data-m="faisabilite" onclick="pickMission(this)"><div class="mc-t">🔍 Faisabilité</div><div class="mc-s">Analyse, programme, esquisse & rapport</div></div>
+      <div class="mc"    data-m="complete"     onclick="pickMission(this)"><div class="mc-t">🏗 Complète</div><div class="mc-s">Conception + Maîtrise d'Œuvre</div></div>
+      <div class="mc"    data-m="partielle"    onclick="pickMission(this)"><div class="mc-t">📐 Partielle</div><div class="mc-s">Conception et/ou Maîtrise d'Œuvre</div></div>
+    </div>
+    <div class="part-row" id="part-row">
+      <label class="popt" id="po-c"><input type="checkbox" id="pc-c" onchange="updPart()"> Conception</label>
+      <label class="popt" id="po-m"><input type="checkbox" id="pc-m" onchange="updPart()"> Maîtrise d'Œuvre</label>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-out" onclick="closeModal()">Annuler</button>
+    <button class="btn btn-dark" id="btn-save" onclick="saveProj()" disabled>Créer</button>
+  </div>
+</div>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   DONNÉES
+════════════════════════════════════════ */
+const PD = {
+  faisabilite:{id:'f',cls:'col-f',lbl:'Faisabilité',title:'Mission Faisabilité',phases:[
+    {n:1,name:'Analyse du site & contraintes',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Visite du site et relevé photographique'},{t:'Consultation du PLU et des servitudes'},{t:'Vérification des règles d\'implantation'},{t:'Identification des contraintes ABF'},{t:'Analyse des réseaux existants'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Synthèse des contraintes réglementaires',b:'PDF'},{t:'Carte de situation et plan de masse annoté',b:'PDF'}]},
+    ]},
+    {n:2,name:'Programme & budget estimatif',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Recueil et formalisation du programme'},{t:'Définition des surfaces et usages cibles'},{t:'Estimation du coût global'},{t:'Analyse faisabilité / budget'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Programme validé',b:'PDF'},{t:'Estimation budgétaire indicative',b:'PDF'}]},
+    ]},
+    {n:3,name:'Esquisse d\'intention',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Exploration des partis architecturaux'},{t:'Vérification compatibilité programme / terrain'},{t:'Mise en forme graphique'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Esquisse d\'intention',b:'PDF'},{t:'Planche d\'ambiances',b:'si nécessaire',bo:true}]},
+    ]},
+    {n:4,name:'Rapport de faisabilité',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Rédaction du rapport de synthèse'},{t:'Mise en page et finalisation'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Rapport de faisabilité complet',b:'PDF'},{t:'Présentation orale des conclusions'}]},
+      {l:'Note',c:'dlv',ao:true,isNote:true,note:'Fin de mission faisabilité. Le client décide de la suite.'},
+    ]},
+  ]},
+  conception:{id:'c',cls:'col-c',lbl:'Phase 1',title:'Conception',phases:[
+    {n:1,name:'Relevé & Esquisse',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Consultation urbanisme (PLU, ABF)'},{t:'Relevé de cotes sur site'},{t:'Remise à plat DAO'},{t:'Analyse faisabilité réglementaire'},{t:'Définition du parti architectural'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Plans existants à l\'échelle',b:'PDF'},{t:'Plans d\'esquisse',b:'PDF'},{t:'Élévations sommaires',b:'PDF'},{t:'Planche tendances',b:'si nécessaire',bo:true}]},
+      {l:'Note',c:'dlv',ao:true,isNote:true,note:'Validation client : 15 jours (tacite). Modifications écrites uniquement.'},
+    ]},
+    {n:2,name:'Avant-Projet',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Intégration des remarques'},{t:'Arrêt des surfaces et implantations'},{t:'Budgétisation du projet'},{t:'Préparation demande administrative'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Plans projet cotés',b:'PDF'},{t:'Élévations et coupes',b:'PDF'},{t:'Plan électrique',b:'PDF'},{t:'Proposition matériaux',b:'PDF'},{t:'Estimation budgétaire',b:'PDF'}]},
+      {l:'Note',c:'dlv',ao:true,isNote:true,note:'Projet figé après validation. Modification = avenant.'},
+    ]},
+    {n:3,name:'Autorisation administrative',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Détermination du type de dossier'},{t:'Constitution pièces administratives'},{t:'Constitution pièces graphiques'},{t:'Signature et reprographie'},{t:'Réponse aux demandes complémentaires'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Dossier déposé en mairie',b:'accusé'},{t:'Accusé d\'enregistrement',b:'PDF'},{t:'Arrêté d\'autorisation',b:'PDF'},{t:'Panneau de chantier affiché'}]},
+      {l:'Note',c:'dlv',ao:true,isNote:true,note:'Délai : 1 mois (DP) / 2-3 mois (PC).'},
+    ]},
+  ]},
+  moe:{id:'m',cls:'col-m',lbl:'Phase 2',title:'Maîtrise d\'Œuvre',phases:[
+    {n:1,name:'Dossier de Consultation des Entreprises',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Descriptif détaillé par corps d\'état'},{t:'Plans d\'exécution si nécessaire'},{t:'Documents contractuels'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'DCE complet par lot',b:'PDF'}]},
+    ]},
+    {n:2,name:'Consultation des entreprises',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Sélection des entreprises'},{t:'Envoi DCE et recueil devis'},{t:'Vérification assurances'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Tableau comparatif des offres',b:'PDF'},{t:'Recommandation sur le choix'}]},
+    ]},
+    {n:3,name:'Direction des Travaux — Gros Œuvre',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Suivi fondations, élévations, planchers'},{t:'Coordination des intervenants'},{t:'Gestion des aléas de structure'},{t:'Contrôle de conformité'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Comptes rendus de chantier',b:'après visite'}]},
+    ]},
+    {n:4,name:'Direction des Travaux — Second Œuvre',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Suivi cloisonnement, menuiseries'},{t:'Suivi réseaux et isolation'},{t:'Contrôle de conformité'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Comptes rendus de chantier',b:'après visite'}]},
+    ]},
+    {n:5,name:'Direction des Travaux — Finitions',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Suivi revêtements, peintures'},{t:'Levée des malfaçons'},{t:'Contrôle de conformité finale'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Comptes rendus de chantier',b:'après visite'}]},
+    ]},
+    {n:6,name:'Réception des travaux (AOR)',groups:[
+      {l:'Actions internes',c:'int',ao:true,tasks:[{t:'Organisation visite de réception'},{t:'Suivi levée des réserves'}]},
+      {l:'Livrables client',c:'dlv',ao:false,tasks:[{t:'Liste des réserves',b:'PDF'},{t:'Procès-verbal de réception signé',b:'PDF'}]},
+      {l:'Note',c:'dlv',ao:true,isNote:true,note:'Fin de mission. Garanties légales.'},
+    ]},
+  ]},
+};
+
+/* ════════════════════════════════════════
+   ÉTAT
+════════════════════════════════════════ */
+let PROJS = {};
+let CUR   = null;
+let CBR   = {};   // pid → [{progEl,visEl,tid,ao}]
+let SEL_M = null; // mission sélectionnée dans le modal
+let EDIT_ID = null;
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', async () => {
+  if(!API_URL){ openCfg(); return; }
+  if(!AUTH_TOKEN){ showLogin(); return; }
+  await load();
+  renderSB();
+  renderDash();
+  // Synchroniser les données locales vers l'API au démarrage
+  saveToAPI();
+});
+
+/* ════════════════════════════════════════
+   MODAL PROJET
+════════════════════════════════════════ */
+function openModal(id) {
+  EDIT_ID = id || null;
+  SEL_M   = null;
+  document.querySelectorAll('.mc').forEach(m => m.classList.remove('on'));
+  document.getElementById('part-row').classList.remove('on');
+  document.getElementById('pc-c').checked = false;
+  document.getElementById('pc-m').checked = false;
+  document.getElementById('po-c').className = 'popt';
+  document.getElementById('po-m').className = 'popt';
+  document.getElementById('btn-save').disabled = true;
+
+  if (id && PROJS[id]) {
+    const p = PROJS[id];
+    document.getElementById('modal-t').textContent     = 'Modifier le projet';
+    document.getElementById('btn-save').textContent    = 'Enregistrer';
+    document.getElementById('f-client').value = p.client;
+    document.getElementById('f-email').value  = p.email;
+    document.getElementById('f-proj').value   = p.project;
+    document.getElementById('f-url').value    = p.url || '';
+    const mc = document.querySelector(`.mc[data-m="${p.mission}"]`);
+    if (mc) pickMission(mc);
+    if (p.mission === 'partielle') {
+      document.getElementById('pc-c').checked = p.pC;
+      document.getElementById('pc-m').checked = p.pM;
+      updPart();
+    }
+  } else {
+    document.getElementById('modal-t').textContent  = 'Nouveau projet';
+    document.getElementById('btn-save').textContent = 'Créer';
+    document.getElementById('f-client').value = '';
+    document.getElementById('f-email').value  = '';
+    document.getElementById('f-proj').value   = '';
+    document.getElementById('f-url').value    = '';
+  }
+  document.getElementById('modal-ov').classList.add('on');
+}
+function closeModal(){ document.getElementById('modal-ov').classList.remove('on'); }
+
+function pickMission(el) {
+  SEL_M = el.dataset.m;
+  document.querySelectorAll('.mc').forEach(m => m.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('part-row').classList.toggle('on', SEL_M === 'partielle');
+  valModal();
+}
+function updPart() {
+  document.getElementById('po-c').className = 'popt' + (document.getElementById('pc-c').checked ? ' c' : '');
+  document.getElementById('po-m').className = 'popt' + (document.getElementById('pc-m').checked ? ' m' : '');
+  valModal();
+}
+function valModal() {
+  let ok = !!SEL_M;
+  if (SEL_M === 'partielle') ok = document.getElementById('pc-c').checked || document.getElementById('pc-m').checked;
+  document.getElementById('btn-save').disabled = !ok;
+}
+
+function saveProj() {
+  const id = EDIT_ID || ('p' + Date.now());
+  const ex = PROJS[id] || {};
+  PROJS[id] = {
+    ...ex,
+    client:  document.getElementById('f-client').value || 'Client',
+    email:   document.getElementById('f-email').value  || '',
+    project: document.getElementById('f-proj').value   || 'Projet',
+    url:     document.getElementById('f-url').value    || '',
+    mission: SEL_M,
+    pC: document.getElementById('pc-c').checked,
+    pM: document.getElementById('pc-m').checked,
+    tasks: ex.tasks || {},
+    _pct: ex._pct || 0,
+    createdAt: ex.createdAt || new Date().toISOString(),
+  };
+  closeModal();
+  persist();
+  renderSB();
+  renderDash();
+  openProj(id);
+}
+
+function delProj() {
+  if (!CUR) return;
+  const p = PROJS[CUR];
+  if (!confirm(`Supprimer "${p.client} — ${p.project}" ?`)) return;
+  delete PROJS[CUR];
+  CUR = null;
+  persist();
+  renderSB();
+  renderDash();
+  goPage('dash');
+}
+
+/* ════════════════════════════════════════
+   OUVRIR PROJET
+════════════════════════════════════════ */
+function openProj(id) {
+  CUR = id;
+  const p = PROJS[id];
+  document.getElementById('ptitle').textContent = p.client;
+  document.getElementById('psub').textContent   = p.project + ' — ' + mlabel(p).t;
+  document.getElementById('url-disp').value     = p.url || '(URL non renseignée)';
+
+  CBR = {};
+  const grid = document.getElementById('task-grid');
+  grid.innerHTML = '';
+  const cols = getCols(p);
+  grid.className = `cg g${cols.length}`;
+  cols.forEach(col => buildCol(col, grid, p));
+  restoreTasks(p);
+
+  goPage('proj');
+  goTab('tasks');
+  renderSB();
+
+  // Reset mail
+  document.getElementById('m-subj').value    = '';
+  document.getElementById('m-body').value    = '';
+  document.getElementById('btn-send').disabled = true;
+  setMSt('idle', '✉', 'Cliquez sur « Générer » pour rédiger le mail automatiquement.');
+}
+
+function getCols(p) {
+  if (p.mission === 'faisabilite') return [PD.faisabilite];
+  if (p.mission === 'complete')    return [PD.conception, PD.moe];
+  const c = [];
+  if (p.pC) c.push(PD.conception);
+  if (p.pM) c.push(PD.moe);
+  return c;
+}
+
+function mlabel(p) {
+  if (p.mission === 'faisabilite') return {t:'Mission Faisabilité', bc:'bf'};
+  if (p.mission === 'complete')    return {t:'Mission Complète',    bc:'bcm'};
+  const pts = [];
+  if (p.pC) pts.push('Conception');
+  if (p.pM) pts.push('MO');
+  return {t:'Partielle — '+pts.join(' + '), bc: p.pC?'bc':'bm'};
+}
+
+/* ════════════════════════════════════════
+   ARBORESCENCE
+════════════════════════════════════════ */
+function buildCol(colData, grid, proj) {
+  const el = document.createElement('div');
+  el.className = `col ${colData.cls}`;
+  el.id = `col-${colData.id}`;
+  el.innerHTML = `
+    <div class="ch">
+      <div class="ch-info"><div class="ch-lbl">${colData.lbl}</div><div class="ch-title">${colData.title}</div></div>
+      <div class="ch-prog">
+        <div class="cpct" id="cpct-${colData.id}">0 %</div>
+        <div class="cpct-lbl">accompli</div>
+        <div class="cb-bg"><div class="cb-fill" id="cbf-${colData.id}" style="width:0%"></div></div>
+      </div>
+    </div>`;
+
+  colData.phases.forEach((ph, pi) => {
+    const pid = `${colData.id}-${pi}`;
+    CBR[pid] = [];
+    const phEl = document.createElement('div');
+    phEl.className = 'phase open';
+    phEl.innerHTML = `
+      <div class="phdr" onclick="togglePh(this)">
+        <div class="phck" id="phck-${pid}"><span class="tk">✓</span><div class="sq"></div></div>
+        <div class="pnum">${ph.n}</div>
+        <div class="pname">${ph.name}</div>
+        <div class="mprog"><div class="mbar"><div class="mfill" id="mfill-${pid}"></div></div><div class="mpct" id="mpct-${pid}">0 %</div></div>
+        <span class="parr">▾</span>
+      </div>
+      <div class="pbody"></div>`;
+    const body = phEl.querySelector('.pbody');
+
+    // légende
+    const leg = document.createElement('div');
+    leg.className = 'vleg';
+    leg.innerHTML = '<span>☑ Avancement</span><span>👁 Visible client</span>';
+    body.appendChild(leg);
+
+    ph.groups.forEach((grp, gi) => {
+      if (grp.isNote) {
+        const nd = document.createElement('div');
+        nd.innerHTML = `<div class="note-b">${grp.note}</div>`;
+        body.appendChild(nd); return;
+      }
+      const gid = `${pid}-${gi}`;
+      const grpEl = document.createElement('div');
+      grpEl.className = 'grp open';
+      grpEl.innerHTML = `
+        <div class="ghdr" onclick="toggleGrp(this)">
+          <div class="glbl ${grp.c}">${grp.l}</div>
+          <span class="garr">▾</span>
+        </div>
+        <div class="tasks"></div>`;
+      const tasksEl = grpEl.querySelector('.tasks');
+
+      grp.tasks.forEach((task, ti) => {
+        const tid = `${gid}-${ti}`;
+        const taskEl = document.createElement('div');
+        taskEl.className = 'task';
+        taskEl.dataset.tid = tid;
+        const visHtml = !grp.ao
+          ? `<input type="checkbox" class="tvis" id="v-${tid}" title="Visible côté client">`
+          : '';
+        const filesHtml = !grp.ao ? `
+          <div class="tfiles" id="tf-${tid}">
+            <div class="flist" id="fl-${tid}"></div>
+            <button class="btn-up" onclick="trigUp('${tid}')">＋ Joindre</button>
+            <input type="file" class="up-input" id="up-${tid}" accept=".pdf,image/*" multiple onchange="handleUp('${tid}',this)">
+          </div>` : '';
+        taskEl.innerHTML = `
+          <div class="trow">
+            <input type="checkbox" class="tcb" id="cb-${tid}">
+            ${visHtml}
+            <label class="tlbl" for="cb-${tid}">${task.t}</label>
+            ${task.b ? `<span class="bdg${task.bo?' opt':''}">${task.b}</span>` : ''}
+          </div>
+          ${filesHtml}`;
+
+        const prog = taskEl.querySelector(`#cb-${tid}`);
+        const vis  = taskEl.querySelector(`#v-${tid}`);
+        prog.addEventListener('change', () => { recalc(colData.id, pid); persist(); renderSB(); });
+        if (vis) vis.addEventListener('change', () => persist());
+        CBR[pid].push({progEl:prog, visEl:vis, tid, ao:grp.ao, label:task.t, phase:ph.name});
+        tasksEl.appendChild(taskEl);
+      });
+      body.appendChild(grpEl);
+    });
+    el.appendChild(phEl);
+  });
+  grid.appendChild(el);
+}
+
+function togglePh(h) { h.parentElement.classList.toggle('open'); }
+function toggleGrp(h){ h.parentElement.classList.toggle('open'); }
+
+function recalc(colId, pid) {
+  const all = CBR[pid]||[];
+  const t=all.length, d=all.filter(c=>c.progEl.checked).length;
+  const pct=t?Math.round(d/t*100):0;
+  document.getElementById(`mfill-${pid}`).style.width=pct+'%';
+  document.getElementById(`mpct-${pid}`).textContent=pct+' %';
+  const pk=document.getElementById(`phck-${pid}`);
+  pk.classList.remove('full','part');
+  if(t>0&&d===t) pk.classList.add('full');
+  else if(d>0)   pk.classList.add('part');
+  const pids=Object.keys(CBR).filter(k=>k.startsWith(colId+'-'));
+  let tA=0,dA=0;
+  pids.forEach(p=>{const v=CBR[p]||[];tA+=v.length;dA+=v.filter(c=>c.progEl.checked).length});
+  const pc=tA?Math.round(dA/tA*100):0;
+  const cpct=document.getElementById(`cpct-${colId}`);
+  const cbf =document.getElementById(`cbf-${colId}`);
+  if(cpct) cpct.textContent=pc+' %';
+  if(cbf)  cbf.style.width=pc+'%';
+}
+
+function restoreTasks(proj) {
+  Object.keys(CBR).forEach(pid => {
+    CBR[pid].forEach(cb => {
+      const s = proj.tasks[cb.tid];
+      if (!s) return;
+      cb.progEl.checked = s.prog||false;
+      if(cb.visEl) cb.visEl.checked = s.vis||false;
+      if(!cb.ao && s.files?.length) renderChips(cb.tid, s.files);
+    });
+    recalc(pid.split('-')[0], pid);
+  });
+}
+
+/* ════════════════════════════════════════
+   UPLOAD
+════════════════════════════════════════ */
+function trigUp(tid){ document.getElementById(`up-${tid}`).click(); }
+
+function handleUp(tid, input) {
+  const p = PROJS[CUR];
+  if(!p.tasks[tid]) p.tasks[tid]={prog:false,vis:false,files:[]};
+  if(!p.tasks[tid].files) p.tasks[tid].files=[];
+  Array.from(input.files).forEach(file=>{
+    const rd=new FileReader();
+    rd.onload=e=>{
+      p.tasks[tid].files.push({name:file.name,type:file.type,data:e.target.result,uploadedAt:new Date().toISOString()});
+      renderChips(tid,p.tasks[tid].files);
+      persist();
+    };
+    rd.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+function renderChips(tid, files) {
+  const fl=document.getElementById(`fl-${tid}`);
+  if(!fl) return;
+  fl.innerHTML='';
+  files.forEach((f,i)=>{
+    const isPdf=f.type==='application/pdf';
+    const isImg=f.type?.startsWith('image/');
+    const chip=document.createElement('div');
+    chip.className=`fchip${isPdf?' pdf':isImg?' img':''}`;
+    chip.innerHTML=`${isPdf?'📄':isImg?'🖼':'📎'} ${f.name} <button class="fchip-x" onclick="rmFile('${tid}',${i})">✕</button>`;
+    fl.appendChild(chip);
+  });
+}
+
+function rmFile(tid, i) {
+  const p=PROJS[CUR];
+  p.tasks[tid]?.files?.splice(i,1);
+  renderChips(tid,p.tasks[tid]?.files||[]);
+  persist();
+}
+
+/* ════════════════════════════════════════
+   MAIL — CLAUDE API
+════════════════════════════════════════ */
+function renderApiBox() {
+  const wrap=document.getElementById('api-wrap');
+  if(!wrap) return;
+  const key=localStorage.getItem('da_key');
+  if(!key){
+    wrap.innerHTML=`<div class="api-box"><strong>Clé API Claude requise</strong> pour la génération des mails.<br><span style="font-size:.69rem">Obtenez votre clé sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></span>
+      <div class="api-row"><input class="api-in" id="api-in" type="password" placeholder="sk-ant-…"><button class="btn btn-dark" onclick="saveKey()" style="padding:7px 12px">Enregistrer</button></div></div>`;
+  } else {
+    wrap.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:.71rem;color:var(--low)"><span>✓ Clé API Claude configurée</span><button class="api-ok" onclick="clearKey()">Modifier</button></div>`;
+  }
+}
+function saveKey(){ const v=document.getElementById('api-in')?.value?.trim(); if(v){localStorage.setItem('da_key',v);renderApiBox();} }
+function clearKey(){ localStorage.removeItem('da_key'); renderApiBox(); }
+
+function setMSt(type, icon, txt) {
+  const el=document.getElementById('mst');
+  el.className='mstatus '+type;
+  document.getElementById('mst-icon').textContent=icon;
+  document.getElementById('mst-txt').textContent=txt;
+}
+
+async function genMail() {
+  const key=localStorage.getItem('da_key');
+  if(!key){ alert('Clé API Claude non configurée.'); return; }
+  const p=PROJS[CUR];
+  if(!p) return;
+
+  // Contexte
+  const cols=getCols(p);
+  const done=[], files=[];
+  let curPhase='', curPhasePct=0;
+  cols.forEach(col=>{
+    col.phases.forEach((ph,pi)=>{
+      const pid=`${col.id}-${pi}`;
+      const all=CBR[pid]||[];
+      const d=all.filter(c=>c.progEl.checked).length;
+      if(d>0){
+        const pct=Math.round(d/all.length*100);
+        if(pct>curPhasePct){curPhase=ph.name;curPhasePct=pct;}
+        all.forEach(cb=>{
+          if(cb.progEl.checked){
+            const lbl=document.querySelector(`label[for="cb-${cb.tid}"]`)?.textContent?.trim()||'';
+            if(lbl) done.push(lbl);
+            const s=p.tasks[cb.tid];
+            s?.files?.forEach(f=>files.push(f.name));
+          }
+        });
+      }
+    });
+  });
+
+  const prompt=`Tu es l'assistant de Victor Vallin, architecte DPLG chez Desarchitectures.
+Rédige un mail de suivi de projet à destination du client.
+
+PARAMÈTRES :
+- Client : ${p.client}
+- Projet : ${p.project}
+- Mission : ${mlabel(p).t}
+- Phase en cours : ${curPhase||'démarrage du projet'}
+- Avancement de la phase : ${curPhasePct} %
+
+TÂCHES RÉCEMMENT ACCOMPLIES :
+${done.slice(-6).map(t=>'• '+t).join('\n')||'• Avancement du projet'}
+
+DOCUMENTS TRANSMIS AVEC CE MAIL :
+${files.length?files.map(f=>'• '+f).join('\n'):'• Aucun document joint à cette mise à jour'}
+
+CONSIGNES :
+- Ton formel et professionnel, vouvoiement
+- 3 à 5 paragraphes : salutation, contexte de l'étape, détail des livrables si applicable, suite du projet, clôture
+- Ne pas inventer d'informations
+- Inviter le client à consulter son espace projet en ligne
+- Terminer par : "Bien cordialement,\nVictor Vallin\nDesarchitectures — Architecte DPLG"
+- Répondre UNIQUEMENT avec le texte du mail, sans balises ni objet`;
+
+  const btn=document.getElementById('btn-gen');
+  btn.disabled=true;
+  document.getElementById('gen-lbl').innerHTML='<span class="spin"></span> Rédaction en cours…';
+  setMSt('running','⏳','Claude rédige votre mail…');
+
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]}),
+    });
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message);
+    const body=data.content?.[0]?.text||'';
+    document.getElementById('m-body').value=body;
+    document.getElementById('m-subj').value=`Suivi de votre projet — ${p.project} — Desarchitectures`;
+    document.getElementById('btn-send').disabled=false;
+    setMSt('done','✓','Mail rédigé — relisez et ajustez avant d\'envoyer.');
+  } catch(e){
+    setMSt('err','✕','Erreur : '+e.message);
+  } finally {
+    btn.disabled=false;
+    document.getElementById('gen-lbl').textContent='✦ Générer avec Claude';
+  }
+}
+
+function sendMail() {
+  const p=PROJS[CUR];
+  const to=encodeURIComponent(p?.email||'');
+  const su=encodeURIComponent(document.getElementById('m-subj').value);
+  const bo=encodeURIComponent(document.getElementById('m-body').value);
+  window.open(`https://mail.google.com/mail/?view=cm&to=${to}&su=${su}&body=${bo}`,'_blank');
+}
+
+/* ════════════════════════════════════════
+   EXPORT JSON
+════════════════════════════════════════ */
+function doExport() {
+  const p=PROJS[CUR];
+  if(!p) return;
+  const cols=getCols(p);
+  const out={client:p.client,project:p.project,mission:mlabel(p).t,exportedAt:new Date().toISOString(),phases:[]};
+  cols.forEach(col=>{
+    col.phases.forEach((ph,pi)=>{
+      const pid=`${col.id}-${pi}`;
+      const tlist=[];
+      (CBR[pid]||[]).forEach(cb=>{
+        if(cb.ao) return;
+        const s=p.tasks[cb.tid]||{};
+        if(!s.vis) return;
+        const lbl=document.querySelector(`label[for="cb-${cb.tid}"]`)?.textContent?.trim()||'';
+        tlist.push({label:lbl,done:s.prog||false,files:(s.files||[]).map(f=>({name:f.name,type:f.type,data:f.data}))});
+      });
+      if(tlist.length) out.phases.push({phase:col.title,name:ph.name,tasks:tlist});
+    });
+  });
+  const slug=p.client.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-');
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=slug+'.json';
+  a.click();
+}
+
+function copyUrl() {
+  navigator.clipboard.writeText(document.getElementById('url-disp').value).then(()=>{
+    const btn=event.currentTarget;
+    btn.textContent='✓';
+    setTimeout(()=>btn.textContent='Copier',1800);
+  });
+}
+
+/* ════════════════════════════════════════
+   DASHBOARD & SIDEBAR
+════════════════════════════════════════ */
+function renderDash() {
+  const ids=Object.keys(PROJS);
+  const body=document.getElementById('dash-body');
+  if(!ids.length){
+    body.innerHTML=`<div class="empty"><div class="ei">📐</div><h2>Aucun projet actif</h2><p>Créez votre premier projet pour commencer à piloter votre mission.</p><button class="btn btn-dark" onclick="openModal()">＋ Créer un projet</button></div>`;
+    return;
+  }
+  body.innerHTML='<div class="proj-cards">'+ids.map(id=>{
+    const p=PROJS[id];
+    const ml=mlabel(p);
+    const pct=p._pct||0;
+    const d=Object.values(p.tasks||{}).filter(v=>v.prog).length;
+    const t=Object.values(p.tasks||{}).length;
+    return `<div class="pc" onclick="openProj('${id}')">
+      <div class="pc-top"><div><div class="pc-name">${p.client}</div><div class="pc-proj">${p.project}</div></div><span class="badge ${ml.bc}">${ml.t}</span></div>
+      <div class="pc-pl"><span>Avancement</span><strong>${pct} %</strong></div>
+      <div class="pc-bg"><div class="pc-bf" style="width:${pct}%"></div></div>
+      <div class="pc-meta">${d} tâche${d>1?'s':''} accomplie${d>1?'s':''}</div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function renderSB() {
+  const list=document.getElementById('proj-list');
+  list.innerHTML='';
+  Object.keys(PROJS).forEach(id=>{
+    const p=PROJS[id];
+    const pct=p._pct||0;
+    const el=document.createElement('div');
+    el.className=`pi${CUR===id?' on':''}`;
+    el.innerHTML=`<div class="pi-name">${p.client}</div><div class="pi-sub">${p.project}</div><div class="pi-bar"><div class="pi-fill" style="width:${pct}%"></div></div>`;
+    el.onclick=()=>openProj(id);
+    list.appendChild(el);
+  });
+}
+
+/* ════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════ */
+function goPage(id) {
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.getElementById(`pg-${id}`).classList.add('on');
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  if(id==='dash') document.querySelector('.nb').classList.add('on');
+}
+
+function goTab(id) {
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(`tc-${id}`).classList.add('on');
+  const idx={tasks:0,mail:1,export:2}[id];
+  document.querySelectorAll('.tab')[idx]?.classList.add('on');
+  if(id==='mail') renderApiBox();
+}
+
+/* ════════════════════════════════════════
+   PERSISTANCE — disque (Electron) ou localStorage (navigateur)
+════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   CONFIG & AUTH
+════════════════════════════════════════ */
+const API_URL = localStorage.getItem('da_api_url') || '';
+let   AUTH_TOKEN = localStorage.getItem('da_token') || '';
+
+function apiHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + AUTH_TOKEN };
+}
+
+/* ════════════════════════════════════════
+   LOGIN SCREEN
+════════════════════════════════════════ */
+function showLogin() {
+  document.getElementById('sb').style.display = 'none';
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function hideLogin() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('sb').style.display = 'flex';
+  document.getElementById('main').style.display = 'block';
+}
+
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const err   = document.getElementById('l-err');
+  err.textContent = '';
+  try {
+    const res  = await fetch(API_URL + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error || 'Erreur'; return; }
+    AUTH_TOKEN = data.token;
+    localStorage.setItem('da_token', AUTH_TOKEN);
+    hideLogin();
+    await load();
+    renderSB(); renderDash();
+    // Synchroniser les données locales vers l'API après connexion
+    saveToAPI();
+  } catch(e) { err.textContent = 'Connexion impossible'; }
+}
+
+/* ════════════════════════════════════════
+   PERSISTANCE — API Railway avec JWT
+════════════════════════════════════════ */
+let saveTimer = null;
+
+function persist() {
+  if(CUR && PROJS[CUR]){
+    const p=PROJS[CUR];
+    let tA=0,dA=0;
+    Object.values(CBR).forEach(cbs=>{
+      cbs.forEach(cb=>{
+        if(!p.tasks[cb.tid]) p.tasks[cb.tid]={prog:false,vis:false,files:[]};
+        p.tasks[cb.tid].prog=cb.progEl.checked;
+        if(cb.visEl) p.tasks[cb.tid].vis=cb.visEl.checked;
+        if(cb.label) p.tasks[cb.tid].label=cb.label;
+        if(cb.phase) p.tasks[cb.tid].phase=cb.phase;
+      });
+      tA+=cbs.length;
+      dA+=cbs.filter(c=>c.progEl.checked).length;
+    });
+    p._pct=tA?Math.round(dA/tA*100):0;
+  }
+  localStorage.setItem('da_projs', JSON.stringify(PROJS));
+  setSaveStatus('saving');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveToAPI(), 800);
+}
+
+async function saveToAPI() {
+  if(!API_URL || !AUTH_TOKEN){ setSaveStatus('ok'); return; }
+  try {
+    const res = await fetch(API_URL + '/projects', {
+      method: 'POST', headers: apiHeaders(), body: JSON.stringify(PROJS),
+    });
+    if(res.status === 401) { logout(); return; }
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    setSaveStatus('ok');
+  } catch(e) { setSaveStatus('error'); }
+}
+
+async function load() {
+  const raw = localStorage.getItem('da_projs');
+  if(raw) try{ PROJS = JSON.parse(raw); }catch(e){}
+  if(!API_URL || !AUTH_TOKEN) return;
+  try {
+    const res = await fetch(API_URL + '/projects', { headers: apiHeaders() });
+    if(res.status === 401) { logout(); return; }
+    if(res.ok){
+      const data = await res.json();
+      if(data && Object.keys(data).length > 0){
+        PROJS = data;
+        localStorage.setItem('da_projs', JSON.stringify(PROJS));
+      }
+    }
+  } catch(e) { console.warn('Chargement API:', e); }
+}
+
+function setSaveStatus(s) {
+  const f = document.getElementById('sb-foot');
+  if(!f) return;
+  if(s==='saving') { f.textContent='● Sauvegarde…';  f.className='sb-foot'; }
+  if(s==='ok')     { f.textContent='● Synchronisé';   f.className='sb-foot saved'; }
+  if(s==='error')  { f.textContent='⚠ Hors ligne';    f.className='sb-foot'; }
+}
+
+function logout() {
+  localStorage.removeItem('da_token');
+  AUTH_TOKEN = '';
+  showLogin();
+}
+
+function saveAPIConfig(url) {
+  localStorage.setItem('da_api_url', url);
+  location.reload();
+}
+
+function openCfg() {
+  document.getElementById('cfg-url').value = localStorage.getItem('da_api_url') || '';
+  document.getElementById('cfg-panel').classList.add('on');
+}
+
+/* ════════════════════════════════════════
+   GESTION CLIENTS
+════════════════════════════════════════ */
+let CLIENTS_PROJECT = null;
+
+async function openClientsModal(projId) {
+  CLIENTS_PROJECT = projId;
+  const p = PROJS[projId];
+  document.getElementById('clients-sub').textContent = `Projet : ${p.client} — ${p.project}`;
+  document.getElementById('clients-modal').classList.add('on');
+  await refreshClientsList();
+}
+function closeClientsModal(){ document.getElementById('clients-modal').classList.remove('on'); }
+
+async function refreshClientsList() {
+  const list = document.getElementById('clients-list');
+  list.innerHTML = '<div style="color:#a09c97;font-size:.75rem;text-align:center;padding:12px">Chargement…</div>';
+  try {
+    const res = await fetch(API_URL+'/clients/'+CLIENTS_PROJECT, { headers: apiHeaders() });
+    const data = await res.json();
+    if(!data.length){ list.innerHTML='<div style="color:#a09c97;font-size:.75rem;text-align:center;padding:16px">Aucun accès créé pour ce projet.</div>'; return; }
+    
+    // Grouper par client (email)
+    const byClient = {};
+    data.forEach(c => {
+      if(!byClient[c.email]) byClient[c.email] = { name: c.name, entries: [] };
+      byClient[c.email].entries.push(c);
+    });
+
+    list.innerHTML = Object.entries(byClient).map(([email, client]) => {
+      const entriesHtml = client.entries.map(c => {
+        const exp = new Date(c.expires_at);
+        const now = new Date();
+        const daysLeft = Math.ceil((exp-now)/(1000*60*60*24));
+        const warn = daysLeft < 30;
+        const expired = daysLeft < 0;
+        return `<div class="ci-entry">
+          <div class="ci-entry-info">
+            <span class="ci-code">${c.code}</span>
+            <span class="ci-exp${warn||expired?' warn':''}">${expired?'Expiré':'Expire le '+exp.toLocaleDateString('fr-FR')+' ('+daysLeft+'j)'}</span>
+            ${!c.active?'<span style="font-size:.58rem;color:#b83228;background:#fdf0ee;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px">RÉVOQUÉ</span>':''}
+          </div>
+          <div class="ci-actions">
+            ${c.active
+              ? `<button class="ci-btn danger" onclick="revokeClient('${c.id}')">✕ Révoquer</button>`
+              : `<button class="ci-btn" onclick="reactivateClient('${c.id}')">↺ Réactiver</button>`}
+            <button class="ci-btn danger" onclick="deleteClient('${c.id}')" style="background:#b83228;color:#fff;border-color:#b83228">🗑 Supprimer</button>
+          </div>
+        </div>`;
+      }).join('');
+
+      return `<div class="client-item client-accordion">
+        <div class="ci-header" onclick="this.parentElement.classList.toggle('open')">
+          <div class="ci-info">
+            <div class="ci-name">${client.name}</div>
+            <div class="ci-email">${email}</div>
+          </div>
+          <span class="ci-arrow">▾</span>
+        </div>
+        <div class="ci-body">${entriesHtml}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { list.innerHTML='<div style="color:#b83228;font-size:.75rem;padding:12px">Erreur de chargement</div>'; }
+}
+async function createClientAccess() {
+  const name  = document.getElementById('nc-name').value.trim();
+  const email = document.getElementById('nc-email').value.trim();
+  const st    = document.getElementById('nc-status');
+  if(!name || !email){ st.style.color='#b83228'; st.textContent='Nom et email requis.'; return; }
+  st.style.color='#5c5852'; st.textContent='Création en cours…';
+  try {
+    const res  = await fetch(API_URL+'/clients', {
+      method:'POST', headers:apiHeaders(),
+      body: JSON.stringify({ projectId: CLIENTS_PROJECT, name, email })
+    });
+    const data = await res.json();
+    if(!res.ok){ st.style.color='#b83228'; st.textContent=data.error; return; }
+    st.style.color='#3a7d5c'; st.textContent=`✓ Code envoyé à ${email}`;
+    document.getElementById('nc-name').value='';
+    document.getElementById('nc-email').value='';
+    await refreshClientsList();
+  } catch(e){ st.style.color='#b83228'; st.textContent='Erreur réseau'; }
+}
+
+async function revokeClient(id){
+  if(!confirm('Révoquer cet accès ?')) return;
+  await fetch(API_URL+'/clients/'+id,{method:'PATCH',headers:apiHeaders(),body:JSON.stringify({active:false})});
+  await refreshClientsList();
+}
+async function deleteClient(id){
+  if(!confirm('Supprimer définitivement cet accès ?')) return;
+  await fetch(API_URL+'/clients/'+id,{method:'DELETE',headers:apiHeaders()});
+  await refreshClientsList();
+}
+async function reactivateClient(id){
+  await fetch(API_URL+'/clients/'+id,{method:'PATCH',headers:apiHeaders(),body:JSON.stringify({active:true})});
+  await refreshClientsList();
+}
+
+/* ════════════════════════════════════════
+   JOURNAL TÉLÉCHARGEMENTS
+════════════════════════════════════════ */
+async function openLogsModal(projId) {
+  document.getElementById('logs-modal').classList.add('on');
+  const list = document.getElementById('logs-list');
+  list.innerHTML = '<div style="color:#a09c97;font-size:.75rem;text-align:center;padding:20px">Chargement…</div>';
+  try {
+    const res  = await fetch(API_URL+'/logs/'+projId, { headers: apiHeaders() });
+    const data = await res.json();
+    if(!data.length){ list.innerHTML='<div style="color:#a09c97;font-size:.75rem;text-align:center;padding:20px">Aucun téléchargement enregistré.</div>'; return; }
+    list.innerHTML = data.map(l => {
+      const d = new Date(l.downloaded_at);
+      const date = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      const time = d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      return `<div class="log-item">
+        <span class="log-icon">↓</span>
+        <div class="log-info">
+          <div class="log-file">${l.filename}</div>
+          <div class="log-meta">${l.client_name} (${l.client_email}) · ${date} à ${time}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){ list.innerHTML='<div style="color:#b83228;font-size:.75rem;padding:12px">Erreur</div>'; }
+}
+
+</script>
+
+<!-- CONFIG API -->
+<div class="cfg-panel" id="cfg-panel">
+  <div class="cfg-box">
+    <div class="cfg-title">Configuration</div>
+    <div class="cfg-sub">Renseignez l'URL de votre API Railway. Vos identifiants sont gérés via l'écran de connexion.</div>
+    <div class="cfg-f"><label>URL de l'API Railway</label><input id="cfg-url" type="text" placeholder="https://votre-app.railway.app"></div>
+    <div class="cfg-row">
+      <button onclick="document.getElementById('cfg-panel').classList.remove('on')" style="padding:9px 16px;border:1px solid #e0dbd3;border-radius:6px;background:#fff;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;color:#5c5852">Annuler</button>
+      <button onclick="saveAPIConfig(document.getElementById('cfg-url').value.trim())" style="padding:9px 16px;border:none;border-radius:6px;background:#1a1a18;color:#fff;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Desarchitectures · Victor Vallin</div>
+    <div class="login-title">Accès architecte</div>
+    <div class="login-hr"></div>
+    <div class="login-f"><label>Email</label><input id="l-email" type="email" placeholder="victor@desarchitectures.fr" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="login-f"><label>Mot de passe</label><input id="l-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="login-err" id="l-err"></div>
+    <button class="login-btn" onclick="doLogin()">Se connecter</button>
+  </div>
+</div>
+
+<!-- CLIENTS MODAL -->
+<div class="clients-modal" id="clients-modal">
+  <div class="clients-box">
+    <button class="clients-x" onclick="closeClientsModal()">✕</button>
+    <div class="clients-title">Accès client</div>
+    <div class="clients-sub" id="clients-sub">Gérez les codes d'accès pour ce projet.</div>
+    <div class="client-form">
+      <div style="font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#a09c97;margin-bottom:10px">Créer un accès</div>
+      <div class="client-form-grid">
+        <div class="f"><label>Nom du client</label><input id="nc-name" type="text" placeholder="M. Dupont"></div>
+        <div class="f"><label>Email</label><input id="nc-email" type="email" placeholder="dupont@mail.com"></div>
+      </div>
+      <button onclick="createClientAccess()" style="padding:9px 16px;background:#1a1a18;color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer">＋ Créer l'accès & envoyer le code</button>
+      <div id="nc-status" style="font-size:.72rem;margin-top:8px;min-height:16px"></div>
+    </div>
+    <div id="clients-list"></div>
+  </div>
+</div>
+
+<!-- LOGS MODAL -->
+<div class="clients-modal" id="logs-modal">
+  <div class="clients-box">
+    <button class="clients-x" onclick="document.getElementById('logs-modal').classList.remove('on')">✕</button>
+    <div class="clients-title">Journal des téléchargements</div>
+    <div class="clients-sub">Tous les téléchargements effectués par vos clients.</div>
+    <div id="logs-list"><div style="color:#a09c97;font-size:.78rem;text-align:center;padding:20px">Chargement…</div></div>
+  </div>
+</div>
+</body>
+</html>
