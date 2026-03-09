@@ -350,9 +350,14 @@ async function analyzeProject() {
     + 'Les premiers documents sont le PLU de la commune de ' + communeLabel + ', zone ' + zone + ' (Sommaire général, règlement de zone, et autres dispositions).\n'
     + 'Les documents suivants sont les plans du projet architectural.\n\n'
     + (description ? 'Points spécifiques à vérifier : ' + description + '\n\n' : '')
-    + 'Analyse point par point la conformité du projet au regard des règles PLU. Examine notamment :\n'
-    + '- Emprise au sol\n- Hauteur maximale\n- Reculs et implantation\n- Aspect extérieur\n- Stationnement\n- Espaces verts\n- Destination et usage\n\n'
-    + 'Réponds UNIQUEMENT en JSON valide (sans markdown, sans backticks) avec cette structure :\n'
+    + 'RÈGLES D\'ANALYSE IMPORTANTES :\n\n'
+    + '1. EXISTANT vs NOUVEAU : Distingue ce qui est existant de ce qui est projeté. Les règles PLU s\'appliquent aux constructions nouvelles et extensions, PAS aux éléments existants antérieurs au PLU. Un élément existant non conforme bénéficie de droits acquis et n\'est pas opposable.\n\n'
+    + '2. VOLUME PRINCIPAL vs SECONDAIRE : Les règles mentionnant "volume principal" ou "bâtiment principal" ne s\'appliquent pas aux volumes secondaires, annexes ou extensions.\n\n'
+    + '3. NON-AGGRAVATION : Si un élément existant est déjà non conforme, le projet ne crée pas de non-conformité s\'il n\'aggrave pas la situation. Classe ces cas en "attention" avec la mention "élément existant — droits acquis" plutôt qu\'en non-conformité.\n\n'
+    + '4. EXTENSION DE L\'EXISTANT : Quand le projet prolonge un volume existant sans créer de nouvel élément, la non-aggravation s\'applique si la situation n\'empire pas.\n\n'
+    + 'Pour chaque point analysé, précise s\'il s\'agit d\'un élément nouveau ou existant.\n\n'
+    + 'Analyse : emprise au sol, hauteur, reculs, aspect extérieur (toiture, façades, menuiseries, pignons), stationnement, espaces verts, destination.\n\n'
+    + 'Réponds UNIQUEMENT en JSON valide (sans markdown, sans backticks) :\n'
     + '{"score":"bon","resume":"...","conformes":[{"titre":"","detail":"","reference":""}],"attention":[{"titre":"","detail":"","reference":""}],"non_conformes":[{"titre":"","detail":"","reference":""}],"manquant":null}';
 
   contentBlocks.push({ type: 'text', text: prompt });
